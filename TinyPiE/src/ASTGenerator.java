@@ -6,12 +6,28 @@ import parser.TinyPiEParser.LiteralExprContext;
 import parser.TinyPiEParser.MulExprContext;
 import parser.TinyPiEParser.ParenExprContext;
 import parser.TinyPiEParser.VarExprContext;
-
+import parser.TinyPiEParser.AndExprContext;
+import parser.TinyPiEParser.OrExprContext;
+import parser.TinyPiEParser.SubExprContext;
 public class ASTGenerator {	
 	ASTNode translateExpr(ParseTree ctxx) {
 		if (ctxx instanceof ExprContext) {
 			ExprContext ctx = (ExprContext) ctxx;
-			return translateExpr(ctx.addExpr());
+			return translateExpr(ctx.orExpr());
+		} else if (ctxx instanceof OrExprContext) {
+			OrExprContext ctx = (OrExprContext) ctxx;
+				if (ctx.orExpr() == null)
+					return translateExpr(ctx.andExpr());
+				ASTNode lhs = translateExpr((ParseTree) ctx.orExpr());
+				ASTNode rhs = translateExpr(ctx.andExpr());
+				return new ASTBinaryExprNode(ctx.Or().getText(), lhs, rhs);
+		} else if (ctxx instanceof AndExprContext) {
+			AndExprContext ctx = (AndExprContext) ctxx;
+			if(ctx.andExpr() == null)
+				return translateExpr(ctx.addExpr());
+			ASTNode lhs = translateExpr((ParseTree) ctx.andExpr());
+			ASTNode rhs = translateExpr(ctx.addExpr());
+			return new ASTBinaryExprNode(ctx.And().getText(),lhs,rhs);
 		} else if (ctxx instanceof AddExprContext) {
 			AddExprContext ctx = (AddExprContext) ctxx;
 			if (ctx.addExpr() == null)
@@ -37,6 +53,10 @@ public class ASTGenerator {
 		} else if (ctxx instanceof ParenExprContext) {
 			ParenExprContext ctx = (ParenExprContext) ctxx;
 			return translateExpr(ctx.expr());
+		} else if (ctxx instanceof SubExprContext) {
+			SubExprContext ctx = (SubExprContext) ctxx;
+			ASTNode operand = translateExpr(ctx.unaryExpr());
+			return new ASTUnaryExprNode(ctx.SUBOP().getText(),operand);
 		}
 		throw new Error("Unknown parse tree node: "+ctxx.getText());		
 	}

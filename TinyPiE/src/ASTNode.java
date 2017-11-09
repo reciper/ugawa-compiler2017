@@ -13,7 +13,20 @@ class ASTBinaryExprNode extends ASTNode {
 	public String toString() {
 		return "(BinExpr "+op+" "+lhs+" "+rhs+")";
 	}
+} 
+class ASTUnaryExprNode extends ASTNode {
+	String op;
+	ASTNode operand;
+	ASTUnaryExprNode(String op, ASTNode operand) {
+		this.op = op;
+		this.operand = operand;
+	}
+	@Override
+	public String toString() {
+		return "(BinExpr "+op+""+operand+")";
+	}	
 }
+
 
 class ASTNumberNode extends ASTNode {
 	int value;
