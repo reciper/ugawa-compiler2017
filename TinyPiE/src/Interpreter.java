@@ -8,9 +8,6 @@ import parser.TinyPiELexer;
 import parser.TinyPiEParser;
 
 public class Interpreter extends InterpreterBase {
-	int evalExpr(ASTNode ndx, Environment env) {
-		throw new Error("Not implemented yet");
-	}
 
 	public int eval(ASTNode ast) {
 		Environment env = new Environment();
@@ -19,7 +16,36 @@ public class Interpreter extends InterpreterBase {
 		addGlobalVariable(env, "z", -1);		
 		return evalExpr(ast, env);
 	}
-
+	public int evalExpr(ASTNode ndx, Environment env){
+		if (ndx instanceof ASTBinaryExprNode) {
+			ASTBinaryExprNode nd = (ASTBinaryExprNode) ndx;
+			int lhsValue = evalExpr(nd.lhs, env);
+			int rhsValue = evalExpr(nd.rhs, env);
+			if (nd.op.equals("+"))
+				return lhsValue + rhsValue;
+			else if (nd.op.equals("-"))
+				return lhsValue - rhsValue;
+			else if (nd.op.equals("*"))
+				return lhsValue * rhsValue;
+			else if (nd.op.equals("/"))
+				return lhsValue / rhsValue;
+			else 
+				throw new Error("Unknown operator: "+nd.op);
+		} else if (ndx instanceof ASTNumberNode) {
+			ASTNumberNode nd = (ASTNumberNode) ndx;
+			return nd.value;
+		} else if (ndx instanceof ASTVarRefNode) {
+			ASTVarRefNode nd = (ASTVarRefNode) ndx;
+			Variable var = env.lookup(nd.varName);
+			if (var == null)
+				throw new Error("Undefined variable: "+nd.varName);
+			return var.get();
+		} else {
+			throw new Error("Unknown expression: "+ndx);
+		}
+	}
+		
+	
 	public static void main(String[] args) throws IOException {
 		ANTLRInputStream input = new ANTLRInputStream(System.in);
 		TinyPiELexer lexer = new TinyPiELexer(input);
